@@ -15,7 +15,6 @@ import ru.netology.nmedia.entity.toEntity
 import ru.netology.nmedia.error.ApiError
 
 
-
 @OptIn(ExperimentalPagingApi::class)
 class PostRemoteMediator(
     private val service: ApiService,
@@ -34,9 +33,11 @@ class PostRemoteMediator(
 
                     service.getLatest(state.config.initialLoadSize)
                 }
+
                 LoadType.PREPEND -> {
                     return MediatorResult.Success(endOfPaginationReached = true)
                 }
+
                 LoadType.APPEND -> {
                     val id = postRemoteKeyDao.min() ?: return MediatorResult.Success(
                         endOfPaginationReached = false
@@ -73,6 +74,7 @@ class PostRemoteMediator(
                             )
                         }
                     }
+
                     LoadType.APPEND -> {
                         postRemoteKeyDao.insert(
                             PostRemoteKeyEntity(
