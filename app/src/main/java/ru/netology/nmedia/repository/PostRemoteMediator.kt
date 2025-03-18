@@ -30,7 +30,6 @@ class PostRemoteMediator(
         return try {
             val response = when (loadType) {
                 LoadType.REFRESH -> {
-
                     service.getLatest(state.config.initialLoadSize)
                 }
 
@@ -57,9 +56,9 @@ class PostRemoteMediator(
             db.withTransaction {
                 when (loadType) {
                     LoadType.REFRESH -> {
-                        postDao.insert(body.toEntity())
-                        if (body.isNotEmpty()) {
-                            postRemoteKeyDao.removeAll()
+                        if (postDao.isEmpty()) {
+
+                            postDao.insert(body.toEntity())
                             postRemoteKeyDao.insert(
                                 listOf(
                                     PostRemoteKeyEntity(
@@ -70,6 +69,14 @@ class PostRemoteMediator(
                                         type = PostRemoteKeyEntity.KeyType.BEFORE,
                                         id = body.last().id,
                                     ),
+                                )
+                            )
+                        } else {
+                            postDao.insert(body.toEntity())
+                            postRemoteKeyDao.insert(
+                                PostRemoteKeyEntity(
+                                    type = PostRemoteKeyEntity.KeyType.AFTER,
+                                    id = body.first().id,
                                 )
                             )
                         }
@@ -84,6 +91,8 @@ class PostRemoteMediator(
                         )
                         postDao.insert(body.toEntity())
                     }
+
+                    else -> {}
                 }
             }
             MediatorResult.Success(endOfPaginationReached = body.isEmpty())
